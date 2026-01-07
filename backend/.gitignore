@@ -1,0 +1,25 @@
+# Python & Django basics
+__pycache__/
+*.py[cod]
+*$py.class
+db.sqlite3
+media/
+staticfiles/
+venv/
+
+.env
+.env.local
+*.env
+
+# Docker
+.docker/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+incron_status.txt

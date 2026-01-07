@@ -1,0 +1,6 @@
+Tanggal;Jam;User;Nama File;Action;Command;Lokasi;Path Lengkap
+2025-12-26;20:37;www-data;cover_issue_82_en.jpg;DIUBAH;-;apache2 -> /var/www/OJS;/var/www/OJS/public/journals/13/cover_issue_82_en.jpg
+2025-12-26;20:37;www-data;cover_issue_82_en.jpg;DITAMBAHKAN;-;apache2 -> /var/www/OJS;/var/www/OJS/public/journals/13/cover_issue_82_en.jpg
+2025-12-26;20:37;unknown;cover_issue_82_en_US.jpg;DIHAPUS;-;unknown;/var/www/OJS/public/journals/13/cover_issue_82_en_US.jpg
+2025-12-24;22:50;ichram;tess.php;DITAMBAHKAN;-;touch -> /var/www/OJS;/var/www/OJS/tess.php
+2025-12-24;22:48;ichram;tess.php;DIHAPUS;-;rm -> /var/www/OJS;/var/www/OJS/tess.php
