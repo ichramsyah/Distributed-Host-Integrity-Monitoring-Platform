@@ -1,6 +1,5 @@
 <img width="1920" height="1080" alt="fim" src="https://github.com/user-attachments/assets/dcf65664-aea7-4c22-88cf-eea5bf24e65f" />
 
-
 # 🛡️ Distributed Host Integrity Monitoring Platform (DHIMP)
 
 [![Python](https://img.shields.io/badge/Python_3-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
@@ -119,7 +118,7 @@ graph TD
 │   ├── deploy-backend.yml         # Ansible Playbook for Backend
 │   └── inventory.ini              # Server Inventory
 │
-└── montly-reports/                # Reporting Assets
+└── monthly-reports/                # Reporting Assets
 ```
 
 ## ✨ Key Features
@@ -198,14 +197,48 @@ docker-compose up -d --build
 
 _This starts the Local Backend Aggregator (Gunicorn/Django) and Monitoring Stack (Prometheus/Grafana)._
 
-### 2. Configure the Agent
+### 2. Configure the Agent (Host IDS)
 
-On the same server, set up the agent to talk to the Local Backend.
+Run these steps on the same monitored server:
 
+#### A. Install Dependencies
 ```bash
 cd agent
 pip install -r requirements.txt
-# Ensure agent.py points to http://localhost:8000/api
+# Ensure dependencies like yara-python and requests are installed
+```
+
+#### B. Setup File Watching (Incron)
+Trigger the agent immediately upon file events.
+```bash
+# 1. Install Incron
+sudo apt install incron
+echo "root" >> /etc/incron.allow
+
+# 2. Add Rule (Edit with: sudo incrontab -e)
+# Format: <Directory> <Events> <Command>
+/var/www/html IN_MODIFY,IN_CREATE,IN_DELETE /usr/bin/python3 /path/to/agent/src/agent.py $@/$# $%
+```
+
+#### C. Setup Automated Maintenance (Crontab)
+Ensure self-healing and periodic health checks.
+```bash
+# Edit crontab: sudo crontab -e
+
+# 1. Check Incron Status (Every 2 mins) - Reports to Dashboard
+*/2 * * * * /path/to/agent/scripts/check_incron.sh /tmp/incron_status.txt
+
+# 2. Self-Healing Auditd (Every 5 mins) - Restarts daemon if crashed
+*/5 * * * * /path/to/agent/scripts/auditd_healer.sh >> /var/log/fim_healer.log 2>&1
+
+# 3. Monthly Deep Maintenance (1st of Month) - Log rotation & Integrity Test
+0 3 1 * * /path/to/agent/scripts/maintain_auditd.sh
+```
+
+#### D. Verify Agent Configuration
+Edit `agent/src/agent.py` to point to your local backend:
+```python
+API_INGEST_URL = "http://127.0.0.1:8000/api/ingest/fim/"
 ```
 
 ### 3. Deploy Centralized Dashboard
