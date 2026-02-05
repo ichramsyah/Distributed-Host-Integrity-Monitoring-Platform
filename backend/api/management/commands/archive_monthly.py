@@ -1,3 +1,20 @@
+"""
+📂 MANAGEMENT COMMAND: MONTHLY FIM LOG BACKUP
+=============================================
+Description:
+  This script is executed via a cron job on the 1st of every month.
+  It acts as a "Data Archival & Cleanup" mechanism.
+
+Key Features:
+  1. Automated Calculation: Determines the start and end date of the previous month.
+  2. Data Retention Policy: Archives logs to CSV for compliance/audit.
+  3. Database Optimization: Deletes archived rows to keep the 'FimLog' table lightweight.
+  4. Memory Safety: Uses .iterator() to handle large datasets without RAM spikes.
+
+Usage:
+  python manage.py archive_fim_logs
+"""
+
 from django.core.management.base import BaseCommand
 from api.models import FimLog
 from django.conf import settings  
@@ -6,7 +23,7 @@ import os
 from datetime import date, timedelta
 
 class Command(BaseCommand):
-    help = 'Backup data bulan lalu ke CSV dan hapus dari database'
+    help = 'Backup last month\'s data to CSV and delete from database'
 
     def handle(self, *args, **kwargs):
         today = date.today()
@@ -15,15 +32,17 @@ class Command(BaseCommand):
         first_day_prev_month = last_day_prev_month.replace(day=1)
         month_str = first_day_prev_month.strftime('%Y-%m')
         
-        BACKUP_DIR = os.path.join(settings.BASE_DIR, 'backup_logs')
+        BACKUP_ROOT = os.getenv('BACKUP_ROOT', os.path.join(settings.BASE_DIR, 'monthly-reports'))
         
-        if not os.path.exists(BACKUP_DIR):
-            os.makedirs(BACKUP_DIR)
+        if not os.path.exists(BACKUP_ROOT):
+            os.makedirs(BACKUP_ROOT)
 
-        self.stdout.write(f"Memproses data periode: {first_day_prev_month} s.d {last_day_prev_month}")
+        self.stdout.write(f"[*] Memproses data periode: {first_day_prev_month} s.d {last_day_prev_month}")
+
+        filename = os.path.join(BACKUP_ROOT, f"fim_log_{month_str}.csv")
 
         self.backup_fim(
-            filename=f"{BACKUP_DIR}/fim_log_{month_str}.csv",
+            filename=filename,
             start_date=first_day_prev_month,
             end_date=last_day_prev_month
         )
@@ -33,40 +52,43 @@ class Command(BaseCommand):
         count = logs.count()
 
         if count == 0:
-            self.stdout.write(self.style.WARNING(f"Tidak ada data FimLog untuk periode ini."))
+            self.stdout.write(self.style.WARNING(f"[!] Tidak ada data FimLog untuk periode ini."))
             return
 
-        self.stdout.write(f"Menemukan {count} data FimLog. Menulis ke CSV...")
+        self.stdout.write(f"[*] Menemukan {count} data FimLog. Menulis ke CSV...")
 
         try:
             with open(filename, 'w', newline='', encoding='utf-8') as csvfile:
                 writer = csv.writer(csvfile, delimiter=';')
                 
-                headers = ['Tanggal', 'Jam', 'User', 'Nama File', 'Action', 'Command', 'Lokasi', 'Path Lengkap']
+                headers = ['Tanggal', 'Jam', 'Severity', 'User', 'Nama File', 'Action', 'Command', 'Lokasi', 'Path Lengkap']
                 writer.writerow(headers)
 
                 for log in logs.iterator():
                     nama_file = os.path.basename(log.path) if log.path else "-"
                     
-                    cmd_val = getattr(log, 'command', '-') 
-                    cwd_val = getattr(log, 'process', '-') 
+                    cmd_val = log.command or '-' 
+                    proc_val = log.process or '-' 
+                    
+                    severity_val = log.severity or 'NORMAL'
 
                     row = [
                         log.timestamp.strftime('%Y-%m-%d'), 
-                        log.timestamp.strftime('%H:%M'),    
+                        log.timestamp.strftime('%H:%M'),
+                        severity_val,  
                         log.user or "unknown",
                         nama_file,
                         log.action,
                         cmd_val,  
-                        cwd_val,  
+                        proc_val,  
                         log.path
                     ]
                     writer.writerow(row)
             
-            self.stdout.write(self.style.SUCCESS(f"Sukses backup FIM ke {filename}"))
+            self.stdout.write(self.style.SUCCESS(f"[+] Sukses backup FIM ke {filename}"))
 
             deleted, _ = logs.delete()
-            self.stdout.write(self.style.SUCCESS(f"Berhasil menghapus {deleted} data FimLog dari database."))
+            self.stdout.write(self.style.SUCCESS(f"[+] Berhasil menghapus {deleted} data FimLog dari database."))
 
         except Exception as e:
-            self.stdout.write(self.style.ERROR(f"Gagal memproses FimLog: {e}"))
+            self.stdout.write(self.style.ERROR(f"[X] Gagal memproses FimLog: {e}"))

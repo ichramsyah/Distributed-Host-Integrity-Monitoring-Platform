@@ -1,0 +1,47 @@
+name: Production Deployment (Showcase)
+
+# Trigger deployment only when a Pull Request is closed
+on:
+  pull_request:
+    types: [closed]
+    branches:
+      - main # Modern standard branch name (formerly master)
+
+jobs:
+  deploy_production:
+    name: Deploy to EC2
+    runs-on: ubuntu-latest
+    # GUARDRAIL: Only execute if the PR was actually merged (not just closed/discarded)
+    if: github.event.pull_request.merged == true
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Execute Remote SSH Commands
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          # Secrets are stored securely in GitHub Repository Settings
+          host: ${{ secrets.PROD_SERVER_HOST }}
+          username: ${{ secrets.PROD_SERVER_USER }}
+          key: ${{ secrets.PROD_SERVER_SSH_KEY }}
+          script: |
+            # 1. Navigate to the project directory on the server
+            cd /var/www/fim-dashboard
+
+            # 2. Ensure we are on the correct branch and pull latest changes
+            git switch main
+            git pull origin main
+
+            # 3. Rebuild containers with the new code
+            # --build: Forces image rebuild to include latest changes
+            # -d: Detached mode (runs in background)
+            sudo docker compose up -d --build
+
+            # 4. Restart Nginx Proxy to apply any routing changes
+            sudo docker compose restart proxy
+
+            # 5. Cleanup: Remove unused images/containers to save disk space
+            sudo docker system prune -f
+
+            echo "🚀 Deployment Successfully Completed!"

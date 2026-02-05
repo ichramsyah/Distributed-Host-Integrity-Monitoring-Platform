@@ -1,4 +1,17 @@
-name: Deploy to Paramadina Server (Final)
+# =============================================================================
+# ⚠ DISCLAIMER
+# This GitHub Actions workflow is provided for portfolio and showcase purposes.  Actual production
+# configurations, credentials, and infrastructure details are managed securely and are not included in this
+# repository.
+#
+# It demonstrates a production-like DevSecOps CI/CD pipeline (security scanning
+# and automated deployment).
+#
+# Actual production pipelines use separate repositories, restricted runners,
+# protected secrets, and environment-specific controls.
+# =============================================================================
+
+name: Production Build & Deploy Pipeline
 
 on:
   push:
@@ -6,7 +19,7 @@ on:
 
 jobs:
   deploy:
-    name: DevSecOps Pipeline
+    name: DevSecOps CI/CD Pipeline
     runs-on: self-hosted
 
     steps:
@@ -14,6 +27,7 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Security Scan (Trivy)
+        # Shift-Left Security: Fails the pipeline if Critical vulnerabilities are found
         run: |
           trivy fs . \
             --severity CRITICAL,HIGH \
@@ -24,8 +38,12 @@ jobs:
       - name: Deployment (Ansible)
         if: success()
         run: |
-          echo "✅ Security Check Lolos! Deploying..."
-          cd /home/webadm1/fim_infra
-          # Memastikan permission aman sebelum deployment
+          echo "✅ Security Scan Passed! Initiating deployment..."
+
+          # Change with your infra repo path
+          cd /home/runner/fim_infra 
+
+          # Change with your deployment command
           ansible-playbook -i inventory.ini deploy_backend.yml
-          echo "🎉 Deployment Selesai!!"
+
+          echo "🎉 Deployment Completed Successfully!!"

@@ -18,7 +18,6 @@ class JWTAuthentication(BaseAuthentication):
             return None
 
         try:
-            # Coba dekode token. Jika berhasil, berarti token valid.
             jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"])
         except jwt.ExpiredSignatureError:
             raise AuthenticationFailed('Token has expired!')

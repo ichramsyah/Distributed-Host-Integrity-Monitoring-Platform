@@ -1,3 +1,10 @@
+"""
+📂 API URL CONFIGURATION
+========================
+Route definitions for the FIM (File Integrity Monitoring) System Backend.
+Includes endpoints for Authentication, Data Ingestion (Agent), and Dashboard Analytics.
+"""
+
 from django.urls import path
 from .views import (
     # Auth & Utils
@@ -18,7 +25,7 @@ urlpatterns = [
     path('logout/', LogoutView.as_view(), name='logout'),
     path('check-auth/', CheckAuthView.as_view(), name='check-auth'),
     
-    # --- Ingest (Untuk Script Python) ---
+    # --- Ingest ---
     path('ingest/fim/', IngestFimLogView.as_view(), name='ingest_fim'),
     
     # --- FIM Dashboard ---

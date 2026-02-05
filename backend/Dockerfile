@@ -1,4 +1,7 @@
-# /home/webadm1/fim_backend_django/Dockerfile
+# ⚠ DISCLAIMER:
+# This Dockerfile is intended for portfolio and showcase purposes only.
+# It represents a simplified container setup for demonstration.
+# Production images may include additional security hardening.
 
 FROM python:3.11-slim
 

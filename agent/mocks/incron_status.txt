@@ -1,0 +1,5 @@
+# showcase-only | simulated incron service status
+
+running 
+# or
+stopped

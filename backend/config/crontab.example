@@ -1,0 +1,22 @@
+# ==============================================================================
+# CRONTAB CONFIGURATION
+# ==============================================================================
+# ⚠ DISCLAIMER:
+# This file is provided for portfolio and educational purposes only. Actual production configurations, credentials, and infrastructure details are managed securely and are not included in this repository.
+#
+# It demonstrates how scheduled tasks may be configured in a
+# File Integrity Monitoring (FIM) system.
+#
+# Paths, commands, and schedules are placeholders and MUST be adapted
+# before any real-world or production use.
+#
+# Usage:
+# Add these lines to the root user's crontab:
+# sudo crontab -e
+# ==============================================================================
+
+# 1. MONTHLY DATA ARCHIVAL (1st day of every month at 00:00)
+# Executes the Django management command inside the Docker container to:
+# - Export last month's logs to CSV
+# - Clear old logs from the database
+0 0 1 * * cd /path/to/fim-project/backend && /usr/bin/docker compose exec -T backend python manage.py archive_fim_logs >> /var/log/fim_archive.log 2>&1

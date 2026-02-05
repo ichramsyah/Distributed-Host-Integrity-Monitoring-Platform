@@ -1,3 +1,8 @@
+# ⚠ DISCLAIMER:
+# This configuration is intended for portfolio and showcase purposes only.
+# It does NOT represent the actual production configuration used on the live server.
+# Sensitive values and production-level security settings are managed separately.
+
 from rest_framework.generics import ListAPIView, CreateAPIView
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -20,8 +25,9 @@ from .serializers import (
 )
 
 # --- CONFIG ---
-HOME_DIR = "/home/ichram"
+HOME_DIR = os.getenv('FIM_HOME_DIR', '/home/user/app') # change as needed
 JWT_SECRET = settings.SECRET_KEY 
+INCRON_STATUS_FILE = os.getenv('INCRON_STATUS_PATH', '/app/incron_status.txt') # change as needed
 
 # --- PAGINATION ---
 class StandardResultsSetPagination(PageNumberPagination):
@@ -32,7 +38,9 @@ class StandardResultsSetPagination(PageNumberPagination):
 # --- CUSTOM PERMISSION ---
 class IsAuthenticatedByJWT(BasePermission):
     """
-    Custom Permission untuk memvalidasi JWT dari Cookie atau Header Authorization
+    Custom Permission untuk memvalidasi JWT dari Cookie atau Header Authorization.
+    Mendukung skenario di mana frontend (Next.js) mengirim token via HttpOnly Cookie
+    atau via Header Authorization (Bearer Token).
     """
     def has_permission(self, request, view):
         token = None
@@ -45,24 +53,19 @@ class IsAuthenticatedByJWT(BasePermission):
                 try:
                     token = auth_header.split(' ', 1)[1]
                 except IndexError:
-                    print("DEBUG: Header Authorization format invalid")
                     return False
 
         if not token:
-            print("DEBUG: Token tidak ditemukan di Cookie maupun Header")
             return False
 
         try:
             jwt.decode(token, JWT_SECRET, algorithms=["HS256"])
             return True
         except jwt.ExpiredSignatureError:
-            print("DEBUG: Token Expired")
             return False
-        except jwt.InvalidTokenError as e:
-            print(f"DEBUG: Token Invalid: {e}")
+        except jwt.InvalidTokenError:
             return False
-        except Exception as e:
-            print(f"DEBUG: Error decoding token: {e}")
+        except Exception:
             return False
 
 # ==========================================
@@ -70,12 +73,18 @@ class IsAuthenticatedByJWT(BasePermission):
 # ==========================================
 
 class CheckAuthView(APIView):
+    """
+    Endpoint sederhana untuk mengecek validitas token user saat ini.
+    """
     permission_classes = [IsAuthenticatedByJWT] 
     
     def get(self, request):
         return Response({"message": "Authenticated"}, status=status.HTTP_200_OK)
 
 class LoginApiView(APIView):
+    """
+    Menangani proses login, membuat JWT Token, dan menyimpannya dalam HttpOnly Cookie.
+    """
     permission_classes = [AllowAny]
 
     def post(self, request):
@@ -98,8 +107,8 @@ class LoginApiView(APIView):
                 key="token",
                 value=token,
                 httponly=True,
-                secure=True, 
-                samesite="None",
+                secure=True,
+                samesite="None", 
                 expires=expiration
             )
             return response
@@ -107,6 +116,9 @@ class LoginApiView(APIView):
             return Response({"error": "Invalid credentials"}, status=status.HTTP_401_UNAUTHORIZED)
 
 class LogoutView(APIView):
+    """
+    Menghapus sesi login dengan mengosongkan cookie token.
+    """
     permission_classes = [AllowAny] 
 
     def post(self, request):
@@ -115,12 +127,15 @@ class LogoutView(APIView):
         return response
 
 class IncronControlApiView(APIView):
+    """
+    Checking the status of the Incron service (File System Watcher) via file status.
+    """
     permission_classes = [IsAuthenticatedByJWT]
+    
     def get(self, request, *args, **kwargs):
-        status_file_path = "/app/incron_status.txt"
         is_running = False  
         try:
-            with open(status_file_path, 'r') as f:
+            with open(INCRON_STATUS_FILE, 'r') as f:
                 if f.read().strip() == "running":
                     is_running = True
             return Response({"is_running": is_running})
@@ -130,15 +145,21 @@ class IncronControlApiView(APIView):
             return Response({"is_running": False, "error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 # ==========================================
-# INGEST & LOGS
+# INGEST & LOGS MANAGEMENT
 # ==========================================
 
 class IngestFimLogView(CreateAPIView):
-    permission_classes = [AllowAny]
+    """
+    Endpoint untuk Agent Python mengirimkan log perubahan file (Ingest).
+    """
+    permission_classes = [AllowAny] 
     queryset = FimLog.objects.all()
     serializer_class = FimLogIngestSerializer 
 
 class LogApiView(ListAPIView):
+    """
+    Mengambil daftar log dengan fitur filtering, searching, dan pagination.
+    """
     permission_classes = [IsAuthenticatedByJWT]
     serializer_class = FimLogSerializer
     pagination_class = StandardResultsSetPagination
@@ -171,6 +192,9 @@ class LogApiView(ListAPIView):
         return queryset
 
     def delete(self, request, *args, **kwargs):
+        """
+        Menghapus log berdasarkan ID (Bulk Delete atau Single Delete).
+        """
         ids = request.data.get('ids', [])
         single_id = request.data.get('id')
         if single_id: ids.append(single_id)
@@ -182,10 +206,13 @@ class LogApiView(ListAPIView):
         return Response({"message": f"{deleted_count} logs deleted"}, status=200)
 
 # ==========================================
-# ANALYTICS (DENGAN MALWARE)
+# ANALYTICS & DASHBOARD DATA
 # ==========================================
 
 class FimAnalyticsApiView(APIView):
+    """
+    Menyediakan statistik ringkas untuk hari ini (Total log per kategori severity).
+    """
     permission_classes = [IsAuthenticatedByJWT]
     def get(self, request):
         today = date.today()
@@ -213,16 +240,21 @@ class FimAnalyticsApiView(APIView):
         })
 
 class FimHistoricalAnalyticsApiView(APIView):
+    """
+    Menyediakan data historis (default 7 hari terakhir) untuk visualisasi Chart.
+    Menggunakan caching untuk mengurangi beban database pada query agregasi berat.
+    """
     permission_classes = [IsAuthenticatedByJWT]
     def get(self, request):
         try: num_days = int(request.query_params.get('days', '7'))
         except: num_days = 7
+        
         today = date.today()
         cache_key = f"fim_historical_chart_{today}_{num_days}"
         cached_data = cache.get(cache_key)
         if cached_data: return Response(cached_data)
-
         start_date = today - timedelta(days=num_days - 1)
+        
         logs_stats = FimLog.objects.filter(timestamp__date__gte=start_date)\
             .annotate(date=TruncDate('timestamp'))\
             .values('date')\
@@ -234,6 +266,7 @@ class FimHistoricalAnalyticsApiView(APIView):
             ).order_by('date')
         
         stats_dict = {item['date'].strftime('%Y-%m-%d'): item for item in logs_stats if item['date']}
+        
         response_list = []
         for i in range(num_days):
             target_date = today - timedelta(days=(num_days - 1) - i) 
@@ -251,10 +284,14 @@ class FimHistoricalAnalyticsApiView(APIView):
                     "normal": normal
                 }
             })
+            
         cache.set(cache_key, response_list, 600) 
         return Response(response_list)
 
 class FimTodayLogsApiView(APIView):
+    """
+    Retrieves specific log details for the current day, grouped by severity category.
+    """
     permission_classes = [IsAuthenticatedByJWT]
     def get(self, request):
         today = date.today()
@@ -268,6 +305,10 @@ class FimTodayLogsApiView(APIView):
             path = item['path'] or ""
             process = item['process'] or ""
             severity = item['severity'] or ""
+            
+            comm = process.split("->")[0].strip() if "->" in process else process
+            exe = process.split("->")[1].strip() if "->" in process else process
+
             formatted_item = {
                 'id': item['id'],
                 'tanggal': item['timestamp'].strftime('%Y-%m-%d'),
@@ -277,23 +318,28 @@ class FimTodayLogsApiView(APIView):
                 'path_lengkap': path,
                 'tag': severity,
                 'user': item['user'],
-                'comm': process.split("->")[0].strip() if "->" in process else process,
-                'exe': process.split("->")[1].strip() if "->" in process else process,
+                'comm': comm,
+                'exe': exe,
                 'full_log': item['full_log']
             }
+            
             tag_lower = severity.lower()
-            # [UPDATE] Logika grouping
             if 'malware' in tag_lower: data['malware'].append(formatted_item)
             elif 'bahaya' in tag_lower: data['bahaya'].append(formatted_item)
             elif 'mencurigakan' in tag_lower: data['mencurigakan'].append(formatted_item)
             else: data['normal'].append(formatted_item)
+            
         return Response(data)
 
 class FimLogsByDateApiView(APIView):
+    """
+    Same as FimTodayLogsApiView, but for a specific date selected by the user.
+    """
     permission_classes = [IsAuthenticatedByJWT]
     def get(self, request):
         date_str = request.query_params.get('date')
         if not date_str: return Response({"error": "Date required"}, status=400)
+        
         try: target_date = datetime.strptime(date_str, '%Y-%m-%d').date()
         except ValueError: return Response({"error": "Invalid date format"}, status=400)
         
@@ -307,6 +353,10 @@ class FimLogsByDateApiView(APIView):
             path = item['path'] or ""
             process = item['process'] or ""
             severity = item['severity'] or ""
+            
+            comm = process.split("->")[0].strip() if "->" in process else process
+            exe = process.split("->")[1].strip() if "->" in process else process
+
             formatted_item = {
                 'id': item['id'],
                 'tanggal': item['timestamp'].strftime('%Y-%m-%d'),
@@ -316,8 +366,8 @@ class FimLogsByDateApiView(APIView):
                 'path_lengkap': path,
                 'tag': severity,
                 'user': item['user'],
-                'comm': process.split("->")[0].strip() if "->" in process else process,
-                'exe': process.split("->")[1].strip() if "->" in process else process,
+                'comm': comm,
+                'exe': exe,
                 'full_log': item['full_log']
             }
             tag_lower = severity.lower()
@@ -325,14 +375,22 @@ class FimLogsByDateApiView(APIView):
             elif 'bahaya' in tag_lower: data['bahaya'].append(formatted_item)
             elif 'mencurigakan' in tag_lower: data['mencurigakan'].append(formatted_item)
             else: data['normal'].append(formatted_item)
+            
         return Response(data)
 
 class FimStatsByDateApiView(APIView):
+    """
+    Summary statistics for a specific date (used when the user clicks on a date in the calendar/chart).
+    """
     permission_classes = [IsAuthenticatedByJWT]
     def get(self, request):
         date_str = request.query_params.get('date')
         if not date_str: return Response({"error": "Date required"}, status=400)
-        target_date = datetime.strptime(date_str, '%Y-%m-%d').date()
+        
+        try:
+            target_date = datetime.strptime(date_str, '%Y-%m-%d').date()
+        except ValueError:
+            return Response({"error": "Invalid date format"}, status=400)
         
         stats = FimLog.objects.filter(timestamp__date=target_date).aggregate(
             total=Count('id'),
@@ -344,6 +402,7 @@ class FimStatsByDateApiView(APIView):
         malware = stats['malware']
         bahaya = stats['bahaya']
         mencurigakan = stats['mencurigakan']
+        
         return Response({
             "tanggal_analisis": date_str,
             "total_perubahan_hari_ini": total,

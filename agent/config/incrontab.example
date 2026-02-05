@@ -1,0 +1,28 @@
+# ==============================================================================
+# INCRONTAB CONFIGURATION
+# ==============================================================================
+# ⚠ DISCLAIMER:
+# This incrontab file is intended for showcase and demonstration purposes only. Actual production 
+# configurations, credentials, and infrastructure details are managed securely and are not included in this 
+# repository.
+#
+# It illustrates how filesystem events may trigger security monitoring logic.
+#
+# The monitored paths and commands below are examples and should NOT be used
+# directly in production environments without proper review and adjustment.
+#
+# Usage:
+# 1. Install incron: sudo apt install incron
+# 2. Add user to incron: echo "root" >> /etc/incron.allow
+# 3. Edit table: sudo incrontab -e
+# ==============================================================================
+
+
+# FORMAT: <Directory_to_Monitor> <Events_Comma_Separated> <Command_to_Run>
+
+# Example: Monitor Web Directory for modifications, creation, or deletion
+# Arguments breakdown:
+#   $@/$# : Full path to the file (e.g., /var/www/html/index.php)
+#   $%    : Event name (e.g., IN_MODIFY)
+
+/var/www/html IN_MODIFY,IN_CREATE,IN_DELETE /path/to/fim-project/agent/src/agent.py $@/$# $%

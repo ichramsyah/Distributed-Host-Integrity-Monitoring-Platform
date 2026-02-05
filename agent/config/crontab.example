@@ -1,0 +1,30 @@
+# ==============================================================================
+# CRONTAB CONFIGURATION
+# ==============================================================================
+# ⚠ DISCLAIMER:
+# This file is provided for portfolio and educational purposes only. Actual production configurations, credentials, and infrastructure details are managed securely and are not included in this repository.
+#
+# It demonstrates how scheduled tasks may be configured in a
+# File Integrity Monitoring (FIM) system.
+#
+# Paths, commands, and schedules are placeholders and MUST be adapted
+# before any real-world or production use.
+#
+# Usage:
+# Add these lines to the root user's crontab:
+# sudo crontab -e
+# ==============================================================================
+
+
+# 1. MONITORING STATUS (Every 2 minutes)
+# Checks if the Incron daemon is active and updates the status file.
+*/2 * * * * /path/to/fim-project/agent/scripts/check_incron.sh /tmp/incron_status.txt
+
+# 2. SELF-HEALING AUDITD (Every 5 minutes)
+# Ensures Auditd service is running and buffer limits are optimal.
+*/5 * * * * /path/to/fim-project/agent/scripts/auditd_healer.sh >> /var/log/fim_healer.log 2>&1
+
+# 3. MONTHLY MAINTENANCE & HEALTH CHECK (1st day of every month at 03:00)
+# Flushes Auditd rules, restarts the service, and performs a physical
+# write/delete test to ensure the monitoring engine is not frozen.
+0 3 1 * * /path/to/fim-project/agent/scripts/maintain_auditd.sh

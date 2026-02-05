@@ -1,0 +1,146 @@
+@import 'tailwindcss';
+
+@media (max-width: 768px) {
+  .responsive-table td::before {
+    content: attr(data-label);
+    float: left;
+    font-weight: 600;
+    margin-right: 1rem;
+    color: #4a5568;
+    color: #131313;
+  }
+}
+
+:root {
+  --nexa: 'Nexa', sans-serif;
+}
+
+body {
+  font-family: var(--nexa);
+}
+
+@theme {
+  /* Black White */
+  --color-whitee: #ffffff;
+  --color-blackk: #000000;
+  --color-spotlight-card: #f8f8f8;
+
+  /* Background */
+  --color-background-dark: #000000; /* Dark background */
+
+  /* Main Background */
+  --color-background-main: #0d0d0d;
+  --color-login: #131313;
+  /* 0F0E0E */
+
+  /* Gray Scale */
+  --color-gray-1: #f3f4f6; /* gray-100 */
+  --color-gray-2: #e5e7eb; /* gray-200 */
+  --color-gray-3: #d1d5db; /* gray-300 */
+  --color-gray-4: #9ca3af; /* gray-400 */
+  --color-gray-5: #6b7280; /* gray-500 */
+  --color-gray-6: #4b5563; /* gray-600 */
+  --color-gray-7: #374151; /* gray-700 */
+  --color-gray-8: #1f2937; /* gray-800 */
+  --color-gray-9: #111827; /* gray-900 */
+  --color-gray-5zero: #f9fafb; /* gray-900 */
+
+  /* Blue Scale */
+  --color-blue-1: #dbeafe; /* blue-100 */
+  --color-blue-2: #bfdbfe; /* blue-200 */
+  --color-blue-3: #93c5fd; /* blue-300 */
+  --color-blue-4: #60a5fa; /* blue-400 */
+  --color-blue-5: #3b82f6; /* blue-500 */
+  --color-blue-6: #2563eb; /* blue-600 */
+  --color-blue-7: #1d4ed8; /* blue-700 */
+  --color-blue-8: #1e40af; /* blue-800 */
+  --color-blue-9: #1e3a8a; /* blue-900 */
+
+  /* Green Scale */
+  --color-green-1: #dcfce7; /* green-100 */
+  --color-green-2: #bbf7d0; /* green-200 */
+  --color-green-3: #86efac; /* green-300 */
+  --color-green-4: #4ade80; /* green-400 */
+  --color-green-5: #22c55e; /* green-500 */
+  --color-green-6: #16a34a; /* green-600 */
+  --color-green-7: #15803d; /* green-700 */
+  --color-green-8: #166534; /* green-800 */
+  --color-green-9: #14532d; /* green-900 */
+
+  /* Purple Scale */
+  --color-purple-1: #f3e8ff; /* purple-100 */
+  --color-purple-2: #e9d5ff; /* purple-200 */
+  --color-purple-3: #d8b4fe; /* purple-300 */
+  --color-purple-4: #c084fc; /* purple-400 */
+  --color-purple-5: #a855f7; /* purple-500 */
+  --color-purple-6: #9333ea; /* purple-600 */
+  --color-purple-7: #7e22ce; /* purple-700 */
+  --color-purple-8: #6b21a8; /* purple-800 */
+  --color-purple-9: #581c87; /* purple-900 */
+
+  /* Orange Scale */
+  --color-orange-1: #fff7ed; /* orange-100 */
+  --color-orange-2: #ffedd5; /* orange-200 */
+  --color-orange-3: #fed7aa; /* orange-300 */
+  --color-orange-4: #fb923c; /* orange-400 */
+  --color-orange-5: #f97316; /* orange-500 */
+  --color-orange-6: #ea580c; /* orange-600 */
+  --color-orange-7: #c2410c; /* orange-700 */
+  --color-orange-8: #9a3412; /* orange-800 */
+  --color-orange-9: #7c2d12; /* orange-900 */
+
+  /* Yellow Scale */
+  --color-yellow-1: #fefce8; /* yellow-100 */
+  --color-yellow-2: #fef9c3; /* yellow-200 */
+  --color-yellow-3: #fef08a; /* yellow-300 */
+  --color-yellow-4: #fde047; /* yellow-400 */
+  --color-yellow-5: #facc15; /* yellow-500 */
+  --color-yellow-6: #eab308; /* yellow-600 */
+  --color-yellow-7: #a16207; /* yellow-700 */
+  --color-yellow-8: #854d0e; /* yellow-800 */
+  --color-yellow-9: #7c2d12; /* yellow-900 */
+
+  /* Neutral Scale */
+  --color-neutral-1: #f8fafc; /* neutral-100 */
+  --color-neutral-2: #f1f5f9; /* neutral-200 */
+  --color-neutral-3: #e2e8f0; /* neutral-300 */
+  --color-neutral-4: #cbd5e1; /* neutral-400 */
+  --color-neutral-5: #94a3b8; /* neutral-500 */
+  --color-neutral-6: #64748b; /* neutral-600 */
+  --color-neutral-7: #475569; /* neutral-700 */
+  --color-neutral-8: #334155; /* neutral-800 */
+  --color-neutral-9: #1e293b; /* neutral-900 */
+}
+
+/* Custom Scrollbar Styling */
+
+/* 1. Mengatur lebar scrollbar */
+::-webkit-scrollbar {
+  width: 3px; /* Lebar untuk scrollbar vertikal */
+  height: 3px; /* Tinggi untuk scrollbar horizontal */
+}
+
+/* 2. Mengatur Track (Jalur Scrollbar) */
+::-webkit-scrollbar-track {
+  background: var(--color-background-dark);
+}
+
+/* 3. Mengatur Thumb (Pegangan Scrollbar) */
+::-webkit-scrollbar-thumb {
+  background-color: var(--color-background-dark);
+  border-radius: 10px;
+  scrollbar-width: thin;
+}
+
+/* 4. Hover State (Opsional: Agar lebih interaktif) */
+::-webkit-scrollbar-thumb:hover {
+  background-color: var(--color-background-dark);
+  border-radius: 10px;
+  scrollbar-width: thin; /* Sedikit lebih terang saat dihover */
+}
+
+/* Optional: Untuk mode gelap yang sangat gelap */
+body {
+  scrollbar-color: var(--color-background-dark) var(--color-background-dark); /* Dukungan untuk Firefox */
+  scrollbar-width: thin; /* Dukungan untuk Firefox */
+}

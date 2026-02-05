@@ -1,0 +1,11 @@
+# ⚠ DISCLAIMER:
+# This activity log is provided for documentation, analysis, and portfolio showcase purposes.
+# The data has been curated and does not represent actual production systems.
+# All incidents have been resolved and do not contain any active sensitive information.
+
+Tanggal;Jam;Severity;User;Nama File;Action;Command;Lokasi;Path Lengkap
+2025-12-24;23:15;BAHAYA;www-data;wp-config.php;DIUBAH;apache2 -> /var/www/html;/var/www/html/webapp/wp-config.php
+2025-12-24;23:16;MALWARE;www-data;backdoor.php;DITAMBAHKAN;unknown;/var/www/html/uploads;/var/www/html/webapp/uploads/backdoor.php
+2025-12-24;23:20;NORMAL;root;backdoor.php;DIHAPUS;rm -> /var/www/html/uploads;/var/www/html/webapp/uploads/backdoor.php
+2025-12-25;08:00;NORMAL;deploy-bot;index.html;DIUBAH;rsync;/var/www/html;/var/www/html/webapp/index.html
+2025-12-25;05:05;KEGIATAN MENCURIGAKAN;admin-sys;nginx.conf;DIUBAH;nano;/etc/nginx;/etc/nginx/nginx.conf

@@ -1,0 +1,5 @@
+# FIM Agent Dependencies
+# Environment: Python 3.10.12 (Ubuntu/Linux)
+
+requests==2.25.1
+yara-python==4.5.4

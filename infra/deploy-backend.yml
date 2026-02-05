@@ -1,52 +1,62 @@
+# ============================================================================
+# ⚠ DISCLAIMER
+# This Ansible playbook is provided for portfolio and showcase purposes only.
+# It represents a simplified and sanitized deployment workflow.
+# Actual production configurations, credentials, and infrastructure details
+# are managed securely and are not included in this repository.
+# ============================================================================
 ---
-- name: Deploy Update Backend Django (Safe Deep Clean)
-  hosts: local_server
+- name: Production Deployment - Backend Django Application
+  hosts: backend_servers
+  become: yes
   vars:
-    project_dir: '/home/webadm1/fim_backend'
-    git_repo: 'git@github.com:ichramsyah/backend-django-paramadina.git'
+    project_dir: '/home/runner/...' # change to your project directory
+    git_repo: 'git@github.com:...' # change to your repository
     branch_name: 'main'
+    venv_path: '{{ project_dir }}/venv'
 
   tasks:
-    - name: 0. Atasi Masalah 'Dubious Ownership' Git
+    - name: 1. Fix Git 'Dubious Ownership' issue
       command: git config --global --add safe.directory {{ project_dir }}
+      tags: git_config
 
-    - name: 1. Tarik kodingan terbaru dari GitHub (Git Pull)
+    - name: 2. Pull latest source code from GitHub
       git:
         repo: '{{ git_repo }}'
         dest: '{{ project_dir }}'
         version: '{{ branch_name }}'
         force: yes
         accept_hostkey: yes
-        key_file: /home/webadm1/.ssh/id_rsa
       register: git_output
 
-    - name: 2. Install dependencies (Pip)
+    - name: 3. Install Python dependencies (Pip)
       pip:
         requirements: '{{ project_dir }}/requirements.txt'
-        virtualenv: '{{ project_dir }}/venv'
+        virtualenv: '{{ venv_path }}'
         virtualenv_command: python3 -m venv
 
-    - name: 3. Migrasi Database
-      command: '{{ project_dir }}/venv/bin/python {{ project_dir }}/manage.py migrate'
+    - name: 4. Apply Database Migrations
+      command: '{{ venv_path }}/bin/python {{ project_dir }}/manage.py migrate'
+      environment:
+        DJANGO_ENV: production
 
-    # --- DATA WIPE ---
-    - name: 4. Hard Reset Docker Data (Tanpa Uninstall)
+    # --- CONTAINER ORCHESTRATION ---
+    - name: 5. Restart Docker Services (Clean Slate)
       shell: |
         cd {{ project_dir }}
 
-        sudo systemctl stop docker
-        sudo systemctl stop docker.socket
-        sudo systemctl stop containerd
+        # 1. Stop existing containers related to this project
+        docker compose down --remove-orphans
 
-        sudo rm -rf /var/lib/docker
+        # 2. Prune unused Docker objects (Images, Networks, build cache)
+        docker system prune -a -f
 
-        sudo systemctl start containerd
-        sudo systemctl start docker
-
-        docker compose up -d --build --remove-orphans
+        # 3. Rebuild and Start containers
+        docker compose up -d --build
       args:
         executable: /bin/bash
+      register: docker_output
 
-    - name: Info Selesai
+    - name: 6. Deployment Status
       debug:
-        msg: 'Deployment Selesai! Server sudah dibersihkan dan versi terbaru live.'
+        msg: '✅ Deployment Successful! Backend is live with the latest version.'
