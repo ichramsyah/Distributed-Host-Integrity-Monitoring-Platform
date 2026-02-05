@@ -85,10 +85,10 @@ graph TD
    User(("👤 Security Admin"))
 
     subgraph "Central Command (SaaS Layer)"
-        Dashboard["🖥️ Next.js Dashboard"]
+        Dashboard["🖥️ Next.js Dashboard (Single Pane of Glass)"]
     end
 
-    subgraph "Distributed Edge Infrastructure"
+    subgraph "Distributed Infrastructure"
         direction LR
         NodeA["Server A"]
         NodeB["Server B"]
