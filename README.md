@@ -1,13 +1,22 @@
 # 🛡️ Distributed Host Integrity Monitoring Platform (DHIMP)
 
-![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?style=for-the-badge&logo=python&logoColor=white)
-![Django](https://img.shields.io/badge/Django-5.0-092E20?style=for-the-badge&logo=django&logoColor=white)
-![Next.js](https://img.shields.io/badge/Next.js-15-000000?style=for-the-badge&logo=nextdotjs&logoColor=white)
-![TailwindCSS](https://img.shields.io/badge/Tailwind_CSS-3.4-06B6D4?style=for-the-badge&logo=tailwind-css&logoColor=white)
-![Docker](https://img.shields.io/badge/Docker-Container-2496ED?style=for-the-badge&logo=docker&logoColor=white)
-![YARA](https://img.shields.io/badge/YARA-Malware_Scanning-2EA44F?style=for-the-badge&logo=linux&logoColor=white)
-![Prometheus](https://img.shields.io/badge/Prometheus-Monitoring-E6522C?style=for-the-badge&logo=prometheus&logoColor=white)
-![Grafana](https://img.shields.io/badge/Grafana-Dashboard-F46800?style=for-the-badge&logo=grafana&logoColor=white)
+[![Python](https://img.shields.io/badge/Python_3-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
+[![YARA](https://img.shields.io/badge/YARA-2EA44F?style=for-the-badge&logo=virustotal&logoColor=white)](https://virustotal.github.io/yara/)
+[![Auditd](https://img.shields.io/badge/Linux_Auditd-FCC624?style=for-the-badge&logo=linux&logoColor=black)](https://manpages.ubuntu.com/manpages/trusty/man8/auditd.8.html)
+[![Bash](https://img.shields.io/badge/Bash_Scripting-4EAA25?style=for-the-badge&logo=gnu-bash&logoColor=white)](https://www.gnu.org/software/bash/)
+[![SQLite](https://img.shields.io/badge/SQLite-003B57?style=for-the-badge&logo=sqlite&logoColor=white)](https://www.sqlite.org/)
+[![Django REST Framework](https://img.shields.io/badge/Django_RF-092E20?style=for-the-badge&logo=django&logoColor=white)](https://www.django-rest-framework.org/)
+[![Next.js](https://img.shields.io/badge/Next.js-000000?style=for-the-badge&logo=nextdotjs&logoColor=white)](https://nextjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-06B6D4?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
+[![JWT](https://img.shields.io/badge/JWT_Auth-d63aff?style=for-the-badge&logo=json-web-tokens&logoColor=white)](https://jwt.io/)
+[![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://www.docker.com/)
+[![Prometheus](https://img.shields.io/badge/Prometheus-E6522C?style=for-the-badge&logo=prometheus&logoColor=white)](https://prometheus.io/)
+[![Grafana](https://img.shields.io/badge/Grafana-F46800?style=for-the-badge&logo=grafana&logoColor=white)](https://grafana.com/)
+[![GitHub Actions](https://img.shields.io/badge/GitHub_Actions-2088FF?style=for-the-badge&logo=github-actions&logoColor=white)](https://github.com/features/actions)
+[![Ansible](https://img.shields.io/badge/Ansible-EE0000?style=for-the-badge&logo=ansible&logoColor=white)](https://www.ansible.com/)
+[![Trivy](https://img.shields.io/badge/Trivy_Scan-47BAE8?style=for-the-badge&logo=aquasecurity&logoColor=white)](https://trivy.dev/)
+[![AWS EC2](https://img.shields.io/badge/AWS_EC2-FF9900?style=for-the-badge&logo=amazonec2&logoColor=white)](https://aws.amazon.com/ec2/)
 
 > **Disclaimer**: This project is for portfolio and showcase purposes only. It demonstrates the design and logic of a FIM agent but requires additional hardening for production use.
 
@@ -106,59 +115,55 @@ graph TD
 
 ## ✨ Key Features
 
-### 🔍 Advanced Detection Capabilities
+### 🔍 Advanced Detection & Forensics
 
-- **Event-Driven Monitoring**: Uses `incron` (inotify) to trigger the agent _immediately_ when file system events occur (Create, Modify, Delete), ensuring near-real-time detection without the overhead of polling.
-- **Syscall Correlation (User Attribution)**: Goes beyond simple file watching by querying Linux Audit (`auditd`) logs to identify the specific **User (uid)** and **Process/Command (comm)** responsible for the change.
-- **Malware Scanning (YARA)**: Integrated YARA engine scans modified files against a compiled ruleset to detect known malware signatures instantly.
+- **Host-Based Real-time Agent**: Built on Python & Linux **Auditd** to capture granular forensic details (**User ID**, **Process Name**, **Working Directory**). Implements **Context-Aware Filtering** to distinguish anomalies based on operational hours.
+- **Hybrid Threat Detection**: Combines **Behavioral Analysis** with **YARA Content Inspection** to detect complex attack patterns like **RCE**, **PHP Webshells**, and **Obfuscated Code**.
+- **Automated Self-Healing**: The agent automatically recovers crashed `auditd` services and optimizes buffer backlogs (8k limit) to prevent log loss.
 
-### 🧠 Intelligent Logic
+### ⚡ Distributed Architecture & Security
 
-- **Smart Deduplication**: The agent includes logic to debounce rapid-fire events (e.g., from script execution) to prevent alert fatigue.
-- **Context-Aware Filtering**:
-  - **Office Hours**: Distinguishes between changes made during business hours vs. suspicious after-hours activity.
-  - **Extension & Path Rules**: whitelist/blacklist support to ignore safe assets (images, logs) while focusing on high-risk files (php, sh, exe, system configs).
+- **Independently Operable Backends**: Distributed Django architecture where each node operates independently, supported by **Shared-Secret JWT Authentication** for secure, consistent cross-server access.
+- **Secure Monitoring Stack**: Containerized **Prometheus & Grafana** configured with **Localhost Binding (127.0.0.1)**, ensuring metric data is accessible only via secure SSH Tunnels.
+- **Real-time Service Health**: Continuous monitoring of the `Incron` daemon status, reporting agent availability directly to the Centralized Dashboard.
 
-### ⚡ Distributed & Scalable Architecture
+### 📊 Centralized Control & Visualization
 
-- **Decentralized Data Aggregation**: Each server manages its own logs via a local Dockerized Django Backend. This prevents a single point of failure for data ingestion.
-- **Secure API Communication**: Agents communicate with their local backend via REST API, and the dashboard aggregates this data securely via JWT-authenticated requests.
+- **Unified Dashboard (Single Pane of Glass)**: A Next.js-based interface with **Unified Access Control** and **Multi-Server API Aggregation**, allowing real-time monitoring of multiple nodes in a single session.
+- **Automated Data Lifecycle**: Custom Django Management Commands executed via **Docker Cron Jobs** to routinely archive historical logs to CSV, keeping the database lightweight (**Auto-Purging**).
 
-### 📊 Modern Centralized Dashboard
+### � DevOps & Automation
 
-- **Unified Visibility**: A single Next.js interface that aggregates health and security status from all connected servers.
-- **Rich Analytics**: Visualizes trends using Visx charts, providing insights into total changes, malware detections, and suspicious activities over time.
-- **Search & Filtering**: Deep dive into logs with filters for severity (Malware, Bahaya, Mencurigakan), date ranges, and filenames.
+- **Automated CI/CD Pipeline**: GitHub Actions & Ansible strategy featuring **Deep Clean Deployment** (removing Docker residue) and autonomous handling of dependencies and database migrations.
+- **Shift-Left Security**: Integrated **Trivy Vulnerability Scanner** in the pipeline with a **Zero-Tolerance Policy** for Critical and High vulnerabilities.
 
 ## 🛠️ Tech Stack
 
-### 1. Monitoring Agent (Client-Side)
+### 1. Core Agent & Forensics
 
-- **Language**: Python 3.10+
-- **Kernel Event Listener**: `incron` (Inotify)
-- **Audit Logging**: `auditd` + `ausearch` (User attribution)
-- **Malware Engine**: `yara-python` (Signature-based detection)
+- **Python 3**: The core runtime for the agent logic.
+- **YARA**: Embedded malware analysis engine for signature-based detection.
+- **Incron**: Uses `inotify` triggers for real-time file system monitoring.
+- **Linux Auditd**: Captures deep forensic data (User ID, Process Name) via syscalls.
+- **Bash Scripting**: Used for self-healing and service recovery mechanisms.
+- **SQLite**: Provides local buffering to ensure no logs are lost during network outages.
 
-### 2. Backend Aggregator (Server-Side)
+### 2. Full-Stack Development
 
-- **Framework**: Django 5.0 (Django REST Framework)
-- **Web Server**: Gunicorn (Production WSGI)
-- **Database**: SQLite (Lightweight, per-node storage)
-- **Authentication**: JWT (JSON Web Tokens) with HttpOnly Cookies
-- **Containerization**: Docker & Docker Compose
-- **Monitoring Stack**:
-  - **Prometheus**: Metrics collection
-  - **Grafana**: System performance visualization
-  - **Node Exporter**: Hardware metrics
+- **Django REST Framework**: High-performance edge backend for data aggregation.
+- **Next.js**: The framework for the Centralized Dashboard (Single Pane of Glass).
+- **TypeScript**: Ensures type safety and code quality across the frontend.
+- **Tailwind CSS**: Utility-first CSS framework for rapid and responsive UI design.
+- **JWT (Shared-Secret)**: Secure cross-server authentication mechanism.
 
-### 3. Centralized Dashboard (Frontend)
+### 3. DevOps & Infrastructure
 
-- **Framework**: Next.js 16 (App Router)
-- **Language**: TypeScript
-- **Styling**: Tailwind CSS 4
-- **Charts**: Visx (Airbnb's visualization primitives)
-- **Icons**: Lucide React
-- **Containerization**: Docker (Multi-stage build)
+- **Docker**: Containerization for consistent deployment across all environments.
+- **Prometheus & Grafana**: Complete infrastructure monitoring stack.
+- **GitHub Actions**: Automated CI/CD pipelines for testing and deployment.
+- **Ansible**: Configuration management for mass-deployment of agents.
+- **Trivy**: Vulnerability scanning to ensure secure container images.
+- **AWS EC2**: The production environment hosting the distributed nodes.
 
 ---
 
