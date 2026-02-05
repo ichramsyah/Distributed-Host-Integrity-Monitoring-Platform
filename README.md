@@ -121,31 +121,31 @@ graph TD
 
 ## ✨ Key Features
 
-### 🔍 Advanced Detection & Forensics
+#### 🔍 Advanced Detection & Forensics
 
 - **Host-Based Real-time Agent**: Built on Python & Linux Auditd to capture granular forensic details (User ID, Process Name, Working Directory). Implements **Context-Aware Filtering** to distinguish anomalies based on operational hours.
 - **Hybrid Threat Detection**: Combines **Behavioral Analysis** with **YARA Content Inspection** to detect complex attack patterns like RCE, PHP Webshells, and Obfuscated Code.
 - **Offline Data Resilience**: Integrated **SQLite local buffering** to prevent log loss during network instability, with automated re-sync mechanisms.
 
-### ⚡ Distributed Architecture & Security
+#### ⚡ Distributed Architecture & Security
 
 - **Independently Operable Backends**: Distributed Django architecture where each node operates independently, secured by **Shared-Secret JWT Authentication**.
 - **Hardened Monitoring Stack**: Containerized Prometheus & Grafana with **Localhost Binding (127.0.0.1)**, enforcing access exclusively via secure SSH Tunnels.
 - **Autonomous Watchdog & Health**: Real-time Incron monitoring and Cron-based self-healing routines to ensure 99.9% service uptime on edge nodes.
 
-### 📊 Centralized Control & Visualization
+#### 📊 Centralized Control & Visualization
 
 - **Unified Dashboard (Single Pane of Glass)**: Next.js interface featuring **Multi-Server API Aggregation** for real-time monitoring of global nodes in a single session.
 - **Automated Data Lifecycle**: Docker-based Cron jobs for **Monthly Archival & Auto-Purging**, maintaining peak database performance by offloading historical data to CSV.
 
-### 🏗️ DevOps & Automation
+#### 🏗️ DevOps & Automation
 
 - **Deep-Clean CI/CD Pipeline**: GitHub Actions & Ansible strategy featuring autonomous dependency handling and **Docker Residue Cleanup** for stable deployments.
 - **Shift-Left Security**: Integrated **Trivy Vulnerability Scanner** with a **Zero-Tolerance Policy** for Critical/High vulnerabilities during the build phase.
 
 ## 🛠️ Tech Stack
 
-### 1. Core Agent & Forensics
+#### 1. Core Agent & Forensics
 
 - **Python 3**: The core runtime for the agent logic.
 - **YARA**: Embedded malware analysis engine for signature-based detection.
@@ -158,7 +158,7 @@ graph TD
 - **Bash Scripting**: Used for self-healing and service recovery mechanisms.
 - **SQLite**: Provides local buffering to ensure no logs are lost during network outages.
 
-### 2. Full-Stack Development
+#### 2. Full-Stack Development
 
 - **Django REST Framework**: High-performance edge backend for data aggregation.
 - **Next.js**: The framework for the Centralized Dashboard (Single Pane of Glass).
@@ -166,7 +166,7 @@ graph TD
 - **Tailwind CSS**: Utility-first CSS framework for rapid and responsive UI design.
 - **JWT (Shared-Secret)**: Secure cross-server authentication mechanism.
 
-### 3. DevOps & Infrastructure
+#### 3. DevOps & Infrastructure
 
 - **Docker**: Containerization for consistent deployment across all environments.
 - **Prometheus & Grafana**: Complete infrastructure monitoring stack.
@@ -179,7 +179,7 @@ graph TD
 
 ## 🚀 Getting Started
 
-### 1. Deploying a Server Unit (Agent + Backend)
+#### 1. Deploying a Server Unit (Agent + Backend)
 
 Run this on **each** server you want to monitor.
 
@@ -195,7 +195,7 @@ docker-compose up -d --build
 
 _This starts the Local Backend Aggregator (Gunicorn/Django) and Monitoring Stack (Prometheus/Grafana)._
 
-### 2. Configure the Agent
+#### 2. Configure the Agent
 
 On the same server, set up the agent to talk to the Local Backend.
 
@@ -205,7 +205,7 @@ pip install -r requirements.txt
 # Ensure agent.py points to http://localhost:8000/api
 ```
 
-### 3. Deploy Centralized Dashboard
+#### 3. Deploy Centralized Dashboard
 
 Run this once on your admin machine or central server.
 
